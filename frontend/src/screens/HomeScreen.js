@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux'
 import { Row, Col } from 'react-bootstrap';
 import Product from '../components/Product';
-import axios from 'axios';
+import { listProducts } from '../actions/productActions'
 
 const HomeScreen = () => {
 
@@ -12,32 +13,35 @@ const HomeScreen = () => {
     // and then what we want to call the function to manipulate or change the state, which we'll call setProducts.
     // And then whatever we want to set as a default for products we pass in here, which is going to be an empty
     // array.
-    const [products, setProducts] = useState([]);
+    //Well, useState is not used here. It has been removed when redux state was being brought into this Homescreen.
 
     // useEffect hook- to make a request to our backend, bcz what useEffect does is we define it and it takes
     // in an arrow function and whatever we put in here is going to run as soon as the component loads. As 
     // soon as this HomeScreen loads. that's going to fire off. Now that's where we want to make our request 
     // bcz we want these products as soon as the component loads.
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            const { data } = await axios.get('/api/products')
+    const dispatch = useDispatch()
 
-            setProducts(data)
-        }
-        fetchProducts()
-    }, []);
+    const productList = useSelector(state => state.productList)
+    const { loading, error, products } = productList
+
+    useEffect(() => {
+        dispatch(listProducts())
+    }, [dispatch]);
 
     return (
         <>
             <h1>Latest Products</h1>
-            <Row>
-                {products.map((product) => (
-                    <Col key={product._id} sm = {12} md = {6} lg ={4} xl={3}>
-                        <Product product={product} />
-                    </Col>
-                ))}
-            </Row>  
+            {loading ? (<h2>Loading...</h2>) : error ? (<h3>{error}</h3>) : (
+                <Row>
+                    {products.map((product) => (
+                        <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
+                            <Product product={product} />
+                        </Col>
+                    ))}
+                </Row>
+            )}
+
         </>
     )
 }
