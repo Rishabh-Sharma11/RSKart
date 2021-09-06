@@ -4,28 +4,37 @@ import { Table, Button, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
-import { listProducts } from '../actions/productActions'
+import { listProducts, deleteProduct } from '../actions/productActions'
 
 const ProductListScreen = ({ history, match }) => {
     const dispatch = useDispatch()
 
     const productList = useSelector(state => state.productList)
-    const { loading, error, users } = productList
+    const { loading, error, products } = productList
+
+    const productDelete = useSelector(state => state.productDelete)
+    const {
+        loading: loadingDelete,
+        error: errorDelete,
+        success: successDelete
+    } = productDelete
 
     const userLogin = useSelector(state => state.userLogin)
     const { userInfo } = userLogin
 
     useEffect(() => {
         if (userInfo && userInfo.isAdmin) {
-            dispatch(listProducts)
+            dispatch(listProducts())
         } else {
             history.push('/login')
         }
-    }, [dispatch, userInfo, history])
+        //passed successDelete as a dependency in useEffect, so that when that happens, this runs again and
+        //it lists the products and then it'll have the deleted product gone.
+    }, [dispatch, userInfo, history, successDelete])
 
     const deleteHandler = (id) => {
         if (window.confirm('Are you sure')) {
-            //DELETE PRODUCTS
+            dispatch(deleteProduct(id))
         }
     }
 
@@ -39,12 +48,14 @@ const ProductListScreen = ({ history, match }) => {
                 <Col>
                     <h1>Products</h1>
                 </Col>
-                <Col className='text-right'>
+                <Col className='text-end'>
                     <Button className='my-3' onClick={createProductHandler}>
                         <i className='fas fa-plus'></i> Create Product
                     </Button>
                 </Col>
             </Row>
+            {loadingDelete && <Loader />}
+            {errorDelete && <Message variant='danger'>{errorDelete}</Message>}
             {loading ? <Loader /> : error ? <Message variant='danger'>{error}</Message> : (
                 <Table striped bordered hover responsive className='table-sm'>
                     <thead>
