@@ -6,7 +6,7 @@ import Message from '../components/Message';
 import Loader from '../components/Loader';
 import { listProducts } from '../actions/productActions'
 
-const HomeScreen = () => {
+const HomeScreen = ({ match }) => {
 
     // useState hook from react- It is to use state in functional components because traditionally with class
     // based components, you would define your state in constructor. Well, with functions, we obviously don't
@@ -22,14 +22,16 @@ const HomeScreen = () => {
     // soon as this HomeScreen loads. that's going to fire off. Now that's where we want to make our request 
     // bcz we want these products as soon as the component loads.
 
+    const keyword = match.params.keyword
+
     const dispatch = useDispatch()
 
     const productList = useSelector(state => state.productList)
     const { loading, error, products } = productList
 
     useEffect(() => {
-        dispatch(listProducts())
-    }, [dispatch]);
+        dispatch(listProducts(keyword))
+    }, [dispatch, keyword]);
 
     return (
         <>
